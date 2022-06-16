@@ -10,14 +10,91 @@
  */
 
 const allWagesFor = function () {
-    const eligibleDates = this.timeInEvents.map(function (e) {
-        return e.date
-    })
+  let eligibleDates = this.timeInEvents.map(function (x) {
+    return x.date;
+  });
 
-    const payable = eligibleDates.reduce(function (memo, d) {
-        return memo + wagesEarnedOnDate.call(this, d)
-    }.bind(this), 0) // <== Hm, why did we need to add bind() there? We'll discuss soon!
+  let grandWages = eligibleDates.reduce(
+    function (accum, date) {
+      return accum + wagesEarnedOnDate.call(this, date);
+    }.bind(this),
+    0
+  );
 
-    return payable
+  return grandWages;
+};
+
+//================
+// Your code here
+const createEmployeeRecord = (array) => {
+  return {
+    firstName: array[0],
+    familyName: array[1],
+    title: array[2],
+    payPerHour: array[3],
+    timeInEvents: [],
+    timeOutEvents: [],
+  };
+};
+
+const createEmployeeRecords = function (employeeArrayData) {
+  return employeeArrayData.map(function (array) {
+    return createEmployeeRecord(array);
+  });
+};
+
+function createTimeInEvent(dateStamp) {
+  let [date, hour] = dateStamp.split(" ");
+
+  this.timeInEvents.push({
+    type: "TimeIn",
+    hour: parseInt(hour, 10),
+    date,
+  });
+  return this;
 }
 
+function createTimeOutEvent(dateStamp) {
+  let [date, hour] = dateStamp.split(" ");
+
+  this.timeOutEvents.push({
+    type: "TimeOut",
+    hour: parseInt(hour, 10),
+    date,
+  });
+  return this;
+}
+
+function hoursWorkedOnDate(specificDate) {
+  let inEventDate = this.timeInEvents.find((x) => x.date === specificDate);
+  let outEventDate = this.timeOutEvents.find((x) => x.date === specificDate);
+
+  return (outEventDate.hour - inEventDate.hour) / 100; // (200 / 2)
+}
+
+function wagesEarnedOnDate(specificDate) {
+  let wageOnDate = hoursWorkedOnDate.call(this, specificDate) * this.payPerHour;
+  return wageOnDate;
+}
+//   const allWagesFor = (employeeRecord) => {
+//     let eligibleDates = employeeRecord.timeInEvents.map(function (x) {
+//       return x.date;
+//     });
+
+//     let grandWages = eligibleDates.reduce(function (accum, specificDate) {
+//       return accum + wagesEarnedOnDate(employeeRecord, specificDate);
+//     }, 0);
+
+//     return grandWages;
+//   };
+function findEmployeeByFirstName(employeeArrayData, firstName) {
+  return employeeArrayData.find(function (record) {
+    return record.firstName === firstName;
+  });
+}
+
+function calculatePayroll(employeeRecord) {
+  return employeeRecord.reduce(function (accum, record) {
+    return accum + allWagesFor.call(record);
+  }, 0);
+}
